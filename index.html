@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Quiz 1-3 Soal - Dark Mode</title>
+<style>
+    body{
+        font-family: Arial, sans-serif;
+        background:#111827; /* Dark mode background */
+        margin:0;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        height:100vh;
+        color:white;
+    }
+    .card{
+        background:#1f2937; /* Dark card */
+        width:90%;
+        max-width:650px;
+        padding:25px;
+        border-radius:14px;
+        box-shadow:0 6px 20px rgba(0,0,0,0.5);
+        text-align:center;
+    }
+
+    /* Progress bar */
+    #progressBox{
+        width:100%;
+        height:12px;
+        background:#374151;
+        border-radius:10px;
+        overflow:hidden;
+        margin-bottom:20px;
+    }
+    #progressFill{
+        height:100%;
+        width:0%;
+        background:#3b82f6; /* Blue fill */
+        transition:0.35s;
+    }
+
+    /* Navigation buttons */
+    #navPanel{
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+        gap:6px;
+        margin-bottom:20px;
+    }
+    .navBtn{
+        width:38px;
+        height:38px;
+        border-radius:6px;
+        background:#4b5563; /* Gray dark */
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        cursor:pointer;
+        font-weight:bold;
+        transition:0.2s;
+        user-select:none;
+        color:white;
+    }
+    .navBtn:hover{
+        background:#6b7280;
+    }
+    .nav-correct{
+        background:#10b981 !important; /* hijau */
+        color:white;
+    }
+    .nav-wrong{
+        background:#e74c3c !important; /* merah */
+        color:white;
+    }
+    .nav-active{
+        background:#3b82f6 !important; /* biru */
+        color:white;
+    }
+
+    /* Question */
+    .question{
+        font-size:20px;
+        margin-bottom:20px;
+        color:white;
+    }
+
+    /* Options */
+    .option{
+        padding:12px;
+        margin:8px 0;
+        background:#374151; /* Dark gray */
+        border-radius:8px;
+        cursor:pointer;
+        transition:0.2s;
+        color:white;
+    }
+    .option:hover{
+        background:#4b5563;
+    }
+    .correct{
+        background:#10b981 !important;
+        color:white;
+    }
+    .wrong{
+        background:#e74c3c !important;
+        color:white;
+    }
+
+    /* Buttons */
+    #nextBtn, #retryBtn{
+        margin-top:20px;
+        padding:12px 20px;
+        border:none;
+        border-radius:8px;
+        background:#3b82f6;
+        color:white;
+        font-size:16px;
+        cursor:pointer;
+        display:none;
+    }
+    #retryBtn{
+        background:#10b981;
+    }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+    <div id="progressBox"><div id="progressFill"></div></div>
+
+    <div id="navPanel"></div>
+
+    <div id="quizBox">
+        <div id="question" class="question"></div>
+        <div id="options"></div>
+        <button id="nextBtn" onclick="nextQuestion()">Next</button>
+    </div>
+
+    <div id="resultBox" style="display:none;">
+        <h2 style="color:white;">Hasil Akhir</h2>
+        <p id="scoreText"></p>
+        <button id="retryBtn" onclick="restartQuiz()">Ulangi Quiz</button>
+    </div>
+
+</div>
+
+<script>
+
+// ==== 3 SOAL ====
+const quiz = [
+    {
+        q:"1. Prinsip dasar yang membuat karya desain tampak stabil dan tidak membuat mata gelisah disebut …",
+        o:["Proporsi","Keseimbangan","Kesatuan","Irama","Komposisi"],
+        a:1
+    },
+    {
+        q:"2. Keseimbangan di mana bagian kanan dan kiri memiliki komposisi yang sama disebut …",
+        o:["Asimetris","Terpusat","Simetris","Seimbang","Harmonis"],
+        a:2
+    },
+    {
+        q:"3. Keseimbangan asimetris berarti …",
+        o:["Semua bagian memiliki ukuran sama","Kiri dan kanan tidak sama, tetapi tetap seimbang","Objek berada di tengah","Menggunakan warna kontras","Tidak memperhatikan proporsi"],
+        a:1
+    },
+    {
+        q:"4. Dalam desain komunikasi visual, “balance” penting agar karya terlihat …",
+        o:["Dinamis dan stabil","Asimetris dan berat sebelah","Gelap dan misterius","Ramai dan padat","Kontras dan berlebihan"],
+        a:0
+    },
+    {
+        q:"5. Jika sebuah desain tampak berat di satu sisi, maka prinsip yang belum diterapkan adalah …",
+        o:["Keseimbangan","Kesatuan","Komposisi","Simplicity","Clarity"],
+        a:0
+    },
+    {
+        q:"6. Keseimbangan terpusat disebut juga …",
+        o:["Radial balance","Center composition","Harmony balance","Linear balance","Vertical composition"],
+        a:0
+    },
+    {
+        q:"7. Keseimbangan radial/terpusat biasanya digunakan pada desain …",
+        o:["Logo","Teks paragraf panjang","Banner iklan horizontal","Kolase acak","Background polos"],
+        a:0
+    },
+    {
+        q:"8. Dalam desain logo, prinsip kesederhanaan penting agar logo …",
+        o:["Mudah dikenali dan diingat","Rumit dan detail","Sulit dibaca","Menarik hanya di layar besar","Tidak bisa dicetak"],
+        a:0
+    },
+    {
+        q:"9. Dalam pembuatan tampilan aplikasi web, prinsip keseimbangan (balance) digunakan agar …",
+        o:["Elemen antar sisi halaman terlihat seimbang dan tidak berat sebelah","Semua komponen antarmuka memiliki warna yang seragam seluruhnya","Elemen ditempatkan secara acak","Semua teks diletakkan di tengah","Gambar dan teks tanpa memperhatikan arah"],
+        a:0
+    },
+    {
+        q:"10. Kesatuan dalam desain berarti …",
+        o:["Semua elemen berbeda","Tidak ada hubungan antar elemen","Elemen saling berhubungan dan membentuk keutuhan","Semua warna harus sama","Elemen berdiri sendiri"],
+        a:2
+    },
+    {
+        q:"11. Kesatuan dapat ditingkatkan dengan menggunakan …",
+        o:["Warna dan gaya yang konsisten","Jenis font yang acak","Tekstur kontras semua","Bentuk berbeda tanpa pola","Tata letak tidak beraturan"],
+        a:0
+    },
+    {
+        q:"12. Komposisi dalam desain berarti …",
+        o:["Pengulangan bentuk","Penempatan acak elemen","Penyusunan elemen menjadi satu kesatuan yang serasi","Penggunaan warna kontras","Penambahan teks pada gambar"],
+        a:2
+    },
+    {
+        q:"13. Komposisi yang baik akan membantu …",
+        o:["Audiens memahami pesan dengan mudah","Menambah jumlah elemen","Mengacaukan tata letak","Menyamarkan objek utama","Menghapus ruang kosong"],
+        a:0
+    },
+    {
+        q:"14. Proporsi adalah …",
+        o:["Perbandingan antara bagian satu dengan bagian lain","Warna yang digunakan dalam desain","Jumlah elemen dalam karya","Penggunaan garis dan bentuk","Pola pengulangan"],
+        a:0
+    },
+    {
+        q:"15. Proporsi dalam desain UI berfungsi untuk …",
+        o:["Menentukan ukuran tombol dan jarak elemen agar seimbang","Membuat semua elemen sama besar","Menyusun warna","Mengatur animasi","Menghapus teks"],
+        a:0
+    },
+    {
+        q:"16. Prinsip yang menunjukkan pengulangan gerak secara teratur disebut …",
+        o:["Irama","Kesatuan","Proporsi","Keseimbangan","Kejelasan"],
+        a:0
+    },
+    {
+        q:"17. Tujuan emphasis dalam desain adalah …",
+        o:["Membuat semua elemen sama pentingnya","Menonjolkan satu elemen utama","Menghapus elemen tidak penting","Membuat desain simetris","Menambahkan warna netral"],
+        a:1
+    },
+    {
+        q:"18. Prinsip kesederhanaan berarti …",
+        o:["Menggunakan banyak warna","Mengurangi elemen tidak penting","Menambahkan detail rumit","Menggunakan banyak jenis huruf","Membuat desain penuh"],
+        a:1
+    },
+    {
+        q:"19. Kesederhanaan dalam desain poster membantu …",
+        o:["Pesan tersampaikan lebih cepat","Desain menjadi lebih rumit","Audiens bingung","Warna lebih banyak","Tulisan sulit dibaca"],
+        a:0
+    },
+    {
+        q:"20. Dalam prinsip kesederhanaan, jumlah jenis huruf ideal adalah …",
+        o:["1","2–3","4","5","Tak terbatas"],
+        a:1
+    },
+    {
+        q:"21. Kesederhanaan penting bagi siswa RPL saat membuat UI karena …",
+        o:["Pengguna fokus pada fungsi utama aplikasi","Semua fitur harus tampil bersamaan","Warna & bentuk harus berbeda di setiap halaman","Efek visual berlebihan itu wajib","Tombol harus dibuat sekecil mungkin"],
+        a:0
+    },
+    {
+        q:"22. Fungsi white space adalah …",
+        o:["Mengisi area kosong","Membuat desain padat","Memberi ruang bagi elemen untuk bernapas","Menonjolkan warna gelap","Menyembunyikan teks"],
+        a:2
+    },
+    {
+        q:"23. White space pada form login bertujuan untuk …",
+        o:["Tampilan bersih dan fokus pada input utama","Menyembunyikan sebagian teks","Menghapus elemen untuk hemat ruang","Memberi efek transisi","Memperbanyak elemen grafis"],
+        a:0
+    },
+    {
+        q:"24. Kejelasan (clarity) dalam desain penting agar …",
+        o:["Desain sulit dimengerti","Pesan dapat dipahami dengan mudah","Warna lebih mencolok","Huruf lebih besar","Tampilan penuh detail"],
+        a:1
+    },
+    {
+        q:"25. Prinsip yang membantu audiens memahami karya tanpa bingung adalah …",
+        o:["Kesederhanaan","Kejelasan","Komposisi","Proporsi","Irama"],
+        a:1
+    },
+    {
+        q:"26. Clarity berarti desain harus …",
+        o:["Mudah dibaca dan tidak ambigu","Dipenuhi teks kecil","Menggunakan efek blur","Menyembunyikan pesan","Mengutamakan hiasan"],
+        a:0
+    },
+    {
+        q:"27. Ruang kosong juga dikenal sebagai …",
+        o:["Foreground","Negative space","Shadow","Highlight","Texture"],
+        a:1
+    },
+    {
+        q:"28. Tujuan ruang kosong adalah …",
+        o:["Menambah elemen baru","Mengurangi keterbacaan","Membuat konten lebih jelas","Mengaburkan isi pesan","Menghilangkan proporsi"],
+        a:2
+    },
+    {
+        q:"29. Penggunaan white space terlalu sedikit membuat desain …",
+        o:["Padat dan sulit dibaca","Ringan dan seimbang","Fokus pada satu titik","Terlalu kosong","Terlalu formal"],
+        a:0
+    },
+    {
+        q:"30. Prinsip yang paling berhubungan dengan harmoni adalah …",
+        o:["Proporsi","Kesatuan","Keseimbangan","Emphasis","Irama"],
+        a:1
+    },
+    {
+        q:"31. Prinsip irama dapat dicapai melalui …",
+        o:["Pengulangan garis, warna, atau bentuk","Perubahan ukuran huruf","Pemotongan gambar","Pemilihan font serif","Penambahan bayangan"],
+        a:0
+    },
+    {
+        q:"32. Tujuan emphasis adalah …",
+        o:["Semua elemen sama penting","Ada titik fokus utama","Warna tidak mencolok","Teks mudah dibaca","Ruang terlihat penuh"],
+        a:1
+    },
+    {
+        q:"33. Kombinasi proporsi 1:1,618 digunakan untuk menciptakan …",
+        o:["Harmoni dan keseimbangan visual","Warna lebih terang","Efek bayangan","Komposisi acak","Gradasi warna"],
+        a:0
+    },
+    {
+        q:"34. Deret Fibonacci menghasilkan nilai mendekati …",
+        o:["Golden Ratio","Rasio 1:2","Pi (π)","Deret aritmatika","Persegi sempurna"],
+        a:0
+    },
+    {
+        q:"35. Golden Ratio sering disebut …",
+        o:["Proporsi emas","Rasio matematis biasa","Proporsi bayangan","Rasio warna","Komposisi spiral"],
+        a:0
+    },
+    {
+        q:"36. Golden ratio dilambangkan dengan huruf Yunani …",
+        o:["Alpha","Beta","Phi (ϕ)","Pi (π)","Omega"],
+        a:2
+    },
+    {
+        q:"37. Spiral bunga matahari mencerminkan prinsip …",
+        o:["Golden Ratio","Kontras","Kesederhanaan","Simetri","Kejelasan"],
+        a:0
+    },
+    {
+        q:"38. Dalam desain web modern, golden ratio membantu …",
+        o:["Menentukan layout proporsional","Memilih warna latar","Menambah teks","Mengatur hyperlink","Menghapus margin"],
+        a:0
+    },
+    {
+        q:"39. Nilai golden ratio kira-kira adalah …",
+        o:["1.2","1.414","1.5","1.618","2.0"],
+        a:3
+    },
+    {
+        q:"40. Golden ratio berhubungan erat dengan …",
+        o:["Deret Fibonacci","Deret Geometri","Deret Aritmetika","Deret Harmonik","Deret Binomial"],
+        a:0
+    }
+]
+
+
+let index = 0;
+let score = 0;
+
+let answered = Array(quiz.length).fill(false);
+let userAnswers = Array(quiz.length).fill(null);
+
+const qEl = document.getElementById("question");
+const optEl = document.getElementById("options");
+const nextBtn = document.getElementById("nextBtn");
+const progressFill = document.getElementById("progressFill");
+const resultBox = document.getElementById("resultBox");
+const quizBox = document.getElementById("quizBox");
+const scoreText = document.getElementById("scoreText");
+const navPanel = document.getElementById("navPanel");
+
+
+// Generate navigation buttons (1–3)
+function generateNav(){
+    for(let i=0;i<quiz.length;i++){
+        const btn = document.createElement("div");
+        btn.className="navBtn";
+        btn.id="nav-"+i;
+        btn.innerHTML=i+1;
+        btn.onclick = ()=> jumpToQuestion(i);
+        navPanel.appendChild(btn);
+    }
+}
+
+
+// Update Indicator Colors
+function updateNavButtons() {
+    for (let i = 0; i < quiz.length; i++) {
+        const btn = document.getElementById("nav-" + i);
+
+        // reset all indicator classes
+        btn.classList.remove("nav-active", "nav-correct", "nav-wrong");
+
+        if (answered[i]) {
+            if (userAnswers[i] === quiz[i].a) {
+                btn.classList.add("nav-correct"); // hijau
+            } else {
+                btn.classList.add("nav-wrong");   // merah
+            }
+        }
+    }
+
+    // Soal aktif biru
+    document.getElementById("nav-" + index).classList.add("nav-active");
+}
+
+
+// Load question
+function loadQuestion(){
+    nextBtn.style.display="none";
+
+    qEl.innerHTML = quiz[index].q;
+    optEl.innerHTML = "";
+
+    quiz[index].o.forEach((opt,i)=>{
+        const div=document.createElement("div");
+        div.className="option";
+        div.innerHTML=opt;
+        div.onclick = ()=> checkAnswer(div,i);
+        optEl.appendChild(div);
+    });
+
+    updateProgress();
+    updateNavButtons();
+
+    // kalau sudah dijawab sebelumnya, tampilkan kembali warnanya
+    if(answered[index]){
+        const correct = quiz[index].a;
+        const opts = document.querySelectorAll(".option");
+
+        opts.forEach((opt,i)=>{
+            opt.style.pointerEvents="none";
+            if(i === correct) opt.classList.add("correct");
+        });
+
+        if(userAnswers[index] !== correct){
+            opts[userAnswers[index]].classList.add("wrong");
+        }
+
+        nextBtn.style.display="block";
+    }
+}
+
+
+// Check answer
+function checkAnswer(optionDiv, selected){
+    const correct = quiz[index].a;
+    const opts = document.querySelectorAll(".option");
+
+    opts.forEach((opt,i)=>{
+        opt.style.pointerEvents="none";
+        if(i === correct) opt.classList.add("correct");
+    });
+
+    if(selected !== correct){
+        optionDiv.classList.add("wrong");
+    } else {
+        score++;
+    }
+
+    userAnswers[index] = selected;
+    answered[index] = true;
+
+    updateNavButtons();
+    nextBtn.style.display="block";
+}
+
+
+// Next question
+function nextQuestion(){
+    index++;
+    if(index < quiz.length){
+        loadQuestion();
+    } else {
+        showResult();
+    }
+}
+
+
+// Progress bar
+function updateProgress(){
+    progressFill.style.width = (index / quiz.length) * 100 + "%";
+}
+
+
+// Jump to any question
+function jumpToQuestion(num){
+    index = num;
+    loadQuestion();
+}
+
+
+// Result
+function showResult(){
+    quizBox.style.display="none";
+    resultBox.style.display="block";
+    progressFill.style.width="100%";
+    scoreText.innerHTML = `Kamu menjawab benar ${score} dari ${quiz.length} soal`;
+}
+
+
+// Restart Quiz
+function restartQuiz(){
+    index = 0;
+    score = 0;
+    answered.fill(false);
+    userAnswers.fill(null);
+
+    quizBox.style.display="block";
+    resultBox.style.display="none";
+
+    updateProgress();
+    loadQuestion();
+    updateNavButtons();
+}
+
+generateNav();
+loadQuestion();
+
+</script>
+
+</body>
+</html>
